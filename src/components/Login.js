@@ -10,7 +10,7 @@ const Login = () => {
 
   // ✅ Fetch all user names
   useEffect(() => {
-    axios.get('http://localhost:5000/users')
+    axios.get('https://newleaf-project.onrender.com/users')
       .then(res => {
         setUserOptions(res.data);
       })
@@ -29,7 +29,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:5000/login', {
+      const res = await axios.post('https://newleaf-project.onrender.com/login', {
         email: form.email,
         password: form.password
       });

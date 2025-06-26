@@ -14,7 +14,7 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
 // MongoDB Setup
-mongoose.connect('mongodb://localhost:27017/expense-tracker', {
+mongoose.connect('mongodb+srv://preethi:1234567890@expensetracker.qxubd3s.mongodb.net/?retryWrites=true&w=majority&appName=expensetracker', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => console.log('✅ MongoDB connected'))

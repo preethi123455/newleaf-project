@@ -6,13 +6,13 @@ const Reports = () => {
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:18000/list-reports')
+    axios.get('https://newleaf-project.onrender.com/list-reports')
       .then(res => setFiles(res.data))
       .catch(() => alert('Failed to fetch reports'));
   }, []);
 
   const handleDownload = (fileName) => {
-    window.open(`http://localhost:18000/download-report/${fileName}`, '_blank');
+    window.open(`https://newleaf-project.onrender.com/download-report/${fileName}`, '_blank');
   };
 
   return (

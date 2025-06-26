@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
 
-const socket = io('http://localhost:1000'); // socket server
+const socket = io('https://newleaf-project.onrender.com'); // socket server
 
 const Chat = () => {
   const userEmail = localStorage.getItem('userEmail'); // store during login
@@ -15,7 +15,7 @@ const Chat = () => {
   useEffect(() => {
     const fetchUserName = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/users');
+        const res = await axios.get('https://newleaf-project.onrender.com/users');
         const user = res.data.find(u => u.email === userEmail);
         if (user) {
           setUserName(user.name);

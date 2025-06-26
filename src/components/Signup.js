@@ -14,7 +14,7 @@ const Signup = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/signup', form);
+      const res = await axios.post('https://newleaf-project.onrender.com/signup', form);
       alert(res.data.message);
       navigate('/home');
     } catch (err) {

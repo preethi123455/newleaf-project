@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // ✅ MongoDB Connection
-mongoose.connect('mongodb://127.0.0.1:27017/expensetracker', {
+mongoose.connect('mongodb+srv://preethi:1234567890@expensetracker.qxubd3s.mongodb.net/?retryWrites=true&w=majority&appName=expensetracker', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log("✅ MongoDB Connected"))
