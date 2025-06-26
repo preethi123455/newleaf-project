@@ -1,3 +1,4 @@
+// backend/server.js
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -12,7 +13,7 @@ app.use(express.json());
 
 // ✅ MongoDB Connection
 mongoose.connect(
-  'mongodb+srv://preethi:1234567890@expensetracker.qxubd3s.mongodb.net/expensetracker?retryWrites=true&w=majority&appName=expensetracker',
+  process.env.MONGO_URI || 'mongodb+srv://preethi:1234567890@expensetracker.qxubd3s.mongodb.net/expensetracker?retryWrites=true&w=majority&appName=expensetracker',
   { useNewUrlParser: true, useUnifiedTopology: true }
 )
   .then(() => console.log("✅ MongoDB Connected"))
@@ -48,9 +49,9 @@ app.post('/expenses', async (req, res) => {
     const { userEmail, salary, expenditure, investment, savings, date } = req.body;
 
     if (
-      !userEmail || !salary || !expenditure || !investment || !savings || !date
+      !userEmail || isNaN(salary) || isNaN(expenditure) || isNaN(investment) || isNaN(savings) || !date
     ) {
-      return res.status(400).send({ message: 'All fields are required' });
+      return res.status(400).send({ message: 'All fields are required and must be valid' });
     }
 
     const profitLoss = salary + investment + savings - expenditure;
@@ -65,11 +66,11 @@ app.post('/expenses', async (req, res) => {
     const pdfPath = path.join(reportsDir, pdfFileName);
     const jsonPath = path.join(reportsDir, jsonFileName);
 
-    // Generate JSON metadata
+    // JSON metadata
     const metadata = { userEmail, date, salary, expenditure, investment, savings, profitLoss };
     fs.writeFileSync(jsonPath, JSON.stringify(metadata, null, 2));
 
-    // Generate PDF report
+    // PDF generation
     const doc = new PDFDocument();
     doc.pipe(fs.createWriteStream(pdfPath));
     doc.fontSize(18).text('📊 Financial Report', { align: 'center' }).moveDown();
@@ -103,8 +104,8 @@ app.get('/list-reports/:email', (req, res) => {
 
 // 📊 Fetch JSON Metadata
 app.get('/api/report-meta/:filename', (req, res) => {
-  const file = req.params.filename;
-  const filePath = path.join(reportsDir, path.basename(file));
+  const file = path.basename(req.params.filename); // avoid path traversal
+  const filePath = path.join(reportsDir, file);
 
   if (!fs.existsSync(filePath)) {
     return res.status(404).send({ message: '❌ Metadata not found' });
@@ -116,7 +117,8 @@ app.get('/api/report-meta/:filename', (req, res) => {
 
 // 📥 Download PDF
 app.get('/download-report/:filename', (req, res) => {
-  const filePath = path.join(reportsDir, path.basename(req.params.filename));
+  const file = path.basename(req.params.filename);
+  const filePath = path.join(reportsDir, file);
   if (!fs.existsSync(filePath)) return res.status(404).send({ message: '❌ File not found' });
   res.download(filePath);
 });
@@ -150,5 +152,5 @@ app.post('/add-team', async (req, res) => {
 // ✅ Start Server
 const PORT = process.env.PORT || 18000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });

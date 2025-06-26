@@ -4,21 +4,38 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Signup = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '', company: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    company: ''
+  });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Optional basic validation
+    if (!form.name || !form.email || !form.password || !form.company) {
+      alert("All fields are required.");
+      return;
+    }
+
     try {
+      setLoading(true);
       const res = await axios.post('https://newleaf-project.onrender.com/signup', form);
-      alert(res.data.message);
+      alert(res.data.message || 'Signup successful');
       navigate('/home');
     } catch (err) {
-      alert(err.response?.data?.message || 'Signup failed');
+      const errorMsg = err.response?.data?.message || '❌ Signup failed. Please try again.';
+      alert(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -26,11 +43,45 @@ const Signup = () => {
     <div style={styles.container}>
       <h2 style={styles.heading}>Create Account</h2>
       <form onSubmit={handleSubmit}>
-        <input style={styles.input} type="text" name="name" placeholder="Your Name" onChange={handleChange} required />
-        <input style={styles.input} type="email" name="email" placeholder="Email" onChange={handleChange} required />
-        <input style={styles.input} type="text" name="company" placeholder="Company Name" onChange={handleChange} required />
-        <input style={styles.input} type="password" name="password" placeholder="Password" onChange={handleChange} required />
-        <button style={styles.button} type="submit">Sign Up</button>
+        <input
+          style={styles.input}
+          type="text"
+          name="name"
+          placeholder="Your Name"
+          value={form.name}
+          onChange={handleChange}
+          required
+        />
+        <input
+          style={styles.input}
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+          required
+        />
+        <input
+          style={styles.input}
+          type="text"
+          name="company"
+          placeholder="Company Name"
+          value={form.company}
+          onChange={handleChange}
+          required
+        />
+        <input
+          style={styles.input}
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+          required
+        />
+        <button style={styles.button} type="submit" disabled={loading}>
+          {loading ? 'Signing up...' : 'Sign Up'}
+        </button>
       </form>
       <p style={styles.switchText}>
         Already have an account? <Link to="/login" style={styles.link}>Go to Login</Link>

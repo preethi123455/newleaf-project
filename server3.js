@@ -4,7 +4,7 @@ const http = require('http');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const { Server } = require('socket.io');
-require('dotenv').config(); // optional, in case you use .env
+require('dotenv').config(); // Optional .env support
 
 const app = express();
 app.use(cors());
@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 });
 
 // ✅ MongoDB Connection
-const mongoURI = 'mongodb+srv://preethi:1234567890@expensetracker.qxubd3s.mongodb.net/chatapp?retryWrites=true&w=majority&appName=expensetracker';
+const mongoURI = process.env.MONGO_URI || 'mongodb+srv://preethi:1234567890@expensetracker.qxubd3s.mongodb.net/chatapp?retryWrites=true&w=majority&appName=expensetracker';
 
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
@@ -25,15 +25,16 @@ mongoose.connect(mongoURI, {
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// ✅ Mongoose Schema
-const User = mongoose.model('User', new mongoose.Schema({
+// ✅ Mongoose Schema & Model
+const UserSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
   company: String
-}));
+});
+const User = mongoose.model('User', UserSchema);
 
-// ✅ Setup HTTP + Socket.io Server
+// ✅ Create HTTP + Socket.io Server
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -42,41 +43,45 @@ const io = new Server(server, {
   }
 });
 
-// ✅ Socket.IO Logic
+// ✅ Socket.IO Events
 io.on('connection', (socket) => {
-  console.log('🟢 New client connected:', socket.id);
+  console.log('🟢 Client connected:', socket.id);
 
-  // Join a room using email (optional grouping)
+  // Join personal room using email
   socket.on('join', (email) => {
     socket.join(email);
-    console.log(`🔗 Client joined room: ${email}`);
+    console.log(`📩 User joined room: ${email}`);
   });
 
-  // Handle incoming message
+  // Handle chat message
   socket.on('send-message', async (msg) => {
     try {
-      const user = await User.findOne({ email: msg.senderEmail });
+      const { senderEmail, text, fileName, fileUrl } = msg;
+
+      const user = await User.findOne({ email: senderEmail });
       const senderName = user ? user.name : 'Unknown';
 
       const message = {
         senderName,
-        text: msg.text,
-        fileName: msg.fileName || null,
-        fileUrl: msg.fileUrl || null,
-        timestamp: new Date()
+        text,
+        fileName: fileName || null,
+        fileUrl: fileUrl || null,
+        timestamp: new Date().toISOString()
       };
 
-      // Emit to all clients or specific room
+      // Broadcast to all clients
       io.emit('receive-message', message);
-      // io.to(msg.receiverEmail).emit('receive-message', message); // if 1-1 chat
 
-      console.log('📤 Message sent:', message);
+      // Optional: For 1-on-1 messaging
+      // io.to(msg.receiverEmail).emit('receive-message', message);
+
+      console.log('📤 Message emitted:', message);
     } catch (err) {
-      console.error('❌ send-message error:', err);
+      console.error('❌ Error sending message:', err);
     }
   });
 
-  // Client disconnected
+  // Handle disconnect
   socket.on('disconnect', () => {
     console.log('🔴 Client disconnected:', socket.id);
   });
@@ -85,5 +90,5 @@ io.on('connection', (socket) => {
 // ✅ Start server
 const PORT = process.env.PORT || 1000;
 server.listen(PORT, () => {
-  console.log(`✅ Socket.IO Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Socket.IO server running at http://localhost:${PORT}`);
 });

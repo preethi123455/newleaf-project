@@ -4,51 +4,60 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+
   const [userOptions, setUserOptions] = useState([]);
   const navigate = useNavigate();
 
-  // ✅ Fetch all user names
+  // ✅ Fetch all users for name dropdown
   useEffect(() => {
     axios.get('https://newleaf-project.onrender.com/users')
-      .then(res => {
-        setUserOptions(res.data);
-      })
-      .catch(() => {
-        alert('⚠️ Failed to fetch user list');
-      });
+      .then((res) => setUserOptions(res.data))
+      .catch(() => alert('⚠️ Failed to fetch user list'));
   }, []);
 
-  // ✅ Handle form field change
-  const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // ✅ Update form on change
+  const handleChange = (e) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // ✅ Handle form submit
-  const handleSubmit = async e => {
+  // ✅ Handle login
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const { name, email, password } = form;
+
+    if (!name || !email || !password) {
+      alert('Please fill all fields.');
+      return;
+    }
+
+    const matchedUser = userOptions.find(u => u.email === email && u.name === name);
+    if (!matchedUser) {
+      alert('⛔ Name and Email do not match.');
+      return;
+    }
 
     try {
       const res = await axios.post('https://newleaf-project.onrender.com/login', {
-        email: form.email,
-        password: form.password
+        email,
+        password
       });
 
-      const matchedUser = userOptions.find(u => u.email === form.email && u.name === form.name);
-      if (!matchedUser) {
-        alert('⛔ Selected name does not match email');
-        return;
-      }
+      alert(res.data.message || 'Login successful');
 
-      alert(res.data.message);
-
-      // ✅ Save to localStorage for Chat.js, Dashboard etc.
-      localStorage.setItem('userEmail', form.email);
-      localStorage.setItem('userName', form.name);
+      // ✅ Store user info for later use
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userName', name);
+      localStorage.setItem('userCompany', matchedUser.company);
 
       navigate('/home');
     } catch (err) {
-      alert(err.response?.data?.message || 'Login failed');
+      alert(err.response?.data?.message || '❌ Login failed');
     }
   };
 
