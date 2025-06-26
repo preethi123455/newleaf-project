@@ -29,7 +29,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post('https://newleaf-project.onrender.com/', {
+      const res = await axios.post('https://newleaf-project.onrender.com/login', {
         email: form.email,
         password: form.password
       });

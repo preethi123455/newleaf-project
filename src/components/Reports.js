@@ -6,7 +6,7 @@ const Reports = () => {
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
-    axios.get('https://newleaf-project.onrender.com/')
+    axios.get('https://newleaf-project.onrender.com/list-reports')
       .then(res => setFiles(res.data))
       .catch(() => alert('Failed to fetch reports'));
   }, []);

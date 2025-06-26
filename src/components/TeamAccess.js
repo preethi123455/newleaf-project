@@ -15,7 +15,7 @@ const Chat = () => {
   useEffect(() => {
     const fetchUserName = async () => {
       try {
-        const res = await axios.get('https://newleaf-project.onrender.com/');
+        const res = await axios.get('https://newleaf-project.onrender.com/users');
         const user = res.data.find(u => u.email === userEmail);
         if (user) {
           setUserName(user.name);
