@@ -5,13 +5,20 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// ✅ Proper CORS for production
+app.use(cors({
+  origin: 'https://newleaf-project.vercel.app',
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 app.use(express.json());
 
-// Health check endpoint
+// ✅ Health check endpoint
 app.get('/', (req, res) => res.send('✅ API is live'));
 
-// MongoDB connection
+// ✅ MongoDB connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://preethi:1234567890@expensetracker.qxubd3s.mongodb.net/expensetracker?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -19,7 +26,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://preethi:1234567890@expe
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB error:', err));
 
-// User schema/model
+// ✅ User schema/model
 const User = mongoose.model('User', new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -27,7 +34,7 @@ const User = mongoose.model('User', new mongoose.Schema({
   company: { type: String, required: true }
 }));
 
-// Signup route
+// ✅ Signup route
 app.post('/signup', async (req, res) => {
   try {
     const { name, email, password, company } = req.body;
@@ -47,6 +54,6 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Start server
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Listening on port ${PORT}`));
