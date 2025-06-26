@@ -1,40 +1,33 @@
 // backend/server.js
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config(); // Optional for secure credentials
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Health Check
-app.get('/', (req, res) => {
-  res.send('✅ API is running');
-});
+// Health check endpoint
+app.get('/', (req, res) => res.send('✅ API is live'));
 
-// ✅ MongoDB Connection
-mongoose.connect(
-  'mongodb+srv://preethi:1234567890@expensetracker.qxubd3s.mongodb.net/expensetracker?retryWrites=true&w=majority&appName=expensetracker',
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-).then(() => console.log('✅ MongoDB connected'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://preethi:1234567890@expensetracker.qxubd3s.mongodb.net/expensetracker?retryWrites=true&w=majority', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch(err => console.error('❌ MongoDB error:', err));
 
-// ✅ Schema
-const UserSchema = new mongoose.Schema({
+// User schema/model
+const User = mongoose.model('User', new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   company: { type: String, required: true }
-});
+}));
 
-const User = mongoose.model('User', UserSchema);
-
-// ✅ Signup Route
+// Signup route
 app.post('/signup', async (req, res) => {
   try {
     const { name, email, password, company } = req.body;
@@ -42,13 +35,11 @@ app.post('/signup', async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const existing = await User.findOne({ email });
-    if (existing) {
+    if (await User.findOne({ email })) {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-    const newUser = new User({ name, email, password, company });
-    await newUser.save();
+    await new User({ name, email, password, company }).save();
     res.status(201).json({ message: 'Signup successful' });
   } catch (err) {
     console.error('❌ Signup error:', err);
@@ -56,8 +47,6 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// ✅ Start Server
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Listening on port ${PORT}`));
